@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {Button, Icon} from "react-materialize";
+import {Button} from "react-materialize";
 
 import {ICustomButton} from '../types'
 
