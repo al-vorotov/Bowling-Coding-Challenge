@@ -4,41 +4,52 @@ import {Row, Col} from "react-materialize";
 
 import {IBowlingScoreSheet} from "../types";
 
+import styles from './styles.module.scss'
+import {IFrame} from "../../layouts/BowlingPlayground/types";
+
 const BowlingScoreSheet: FC<IBowlingScoreSheet> = ({frameScheme}: IBowlingScoreSheet) => {
 
+  const handleActionDisplay = (item: IFrame) => {
+
+    return item.strike //if strike
+      ? 'x'
+      : `${String(
+        item.goals1 < 0 //if null
+          ? ' '
+          : item.goals1
+      )}
+                |
+                ${String(
+        item.goals2 < 0 //if null
+          ? ' '
+          : item.goals2 + item.goals1 === 10 // if spare
+          ? '/'
+          : item.goals2
+      )}`
+  }
   return (
     <>
-      <Row style={{margin: '50px auto 0'}}>
+      <Row className={styles.bowlingScoreSheet}>
         {frameScheme.map((item) => <Col
           className="teal white-text"
           s={1}
           key={item.stage}
         >
-          {String(item.stage + 1)}
+          {String(item.stage > 9 ? 'bonus': item.stage + 1 )}
         </Col>)}
       </Row>
-      <Row style={{margin: '0 auto'}}>
-        {frameScheme.map((item) => <Col
+      <Row className={styles.bowlingScoreSheet__row}>
+        {frameScheme.map((item: IFrame) => <Col
           className="teal white-text"
           s={1}
           key={item.stage}
         >
           <span>
-            {
-              item.strike
-                ? 'x'
-                : `${String(item.goals1 === 0
-                ? ' '
-                : item.goals1)}
-                |
-                ${String(item.goals2 === 0
-                ? ' '
-                : item.goals2)}`
-            }
+            {handleActionDisplay(item)}
           </span>
         </Col>)}
       </Row>
-      <Row style={{margin: '0 auto'}}>
+      <Row className={styles.bowlingScoreSheet__row}>
         {frameScheme.map((item) => <Col
           className="teal white-text"
           s={1}
@@ -51,4 +62,4 @@ const BowlingScoreSheet: FC<IBowlingScoreSheet> = ({frameScheme}: IBowlingScoreS
   );
 }
 
-export default BowlingScoreSheet;
+export {BowlingScoreSheet};

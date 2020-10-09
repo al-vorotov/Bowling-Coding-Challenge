@@ -17,4 +17,4 @@ const InputRange: ({onChange, value, max}: IInputRange) => JSX.Element = ({onCha
   );
 }
 
-export default InputRange;
+export{InputRange};

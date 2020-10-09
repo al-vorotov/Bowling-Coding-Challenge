@@ -9,12 +9,15 @@ import {
   BowlingScoreSheet,
   InputRange,
   CustomButton,
-  Modal
+  CustomModal,
+  PinsDisplay,
+  Scene
 } from "../../components";
 import {GOALS} from "../../helpers/constant";
 
 import {IFrame, IState, IStateSetter} from "./types";
 
+import styles from './styles.module.scss'
 
 const defaultState = {
   action: [],
@@ -29,8 +32,8 @@ const defaultState = {
 
 const defaultFrameScheme = [
   {
-    goals1: 0,
-    goals2: 0,
+    goals1: -1,
+    goals2: -1,
     total: 0,
     stage: 0,
     strike: false,
@@ -151,7 +154,7 @@ const BowlingPlayground: FC = () => {
 
     currentFrameSchema[state.stage] = {
       goals1: state.pins,
-      goals2: 0,
+      goals2: -1,
       total: state.pins,
       stage: state.stage,
       strike: true
@@ -197,7 +200,7 @@ const BowlingPlayground: FC = () => {
       {
         goals1: state.goals === 1 ? frameScheme[state.stage].goals1 : 0,
         goals2: 0,
-        total: state.goals === 1 ? frameScheme[state.stage].total : 0,
+        total: state.goals === 0 ? frameScheme[state.stage].total : 0,
         stage: state.stage,
         strike: false
       }
@@ -264,6 +267,7 @@ const BowlingPlayground: FC = () => {
   }, [frameScheme, previousValueMultiplier, state.action, state.currentlyPins, state.goals, state.pins, state.stage, state.total, stateSetter])
 
   const gameEnd = useCallback(() => {
+
     stateSetter([
       {
         key: 'gameEnd',
@@ -296,6 +300,7 @@ const BowlingPlayground: FC = () => {
   }, [defaultCase, falseCase, strikeCase])
 
   const handleActionButton = (random?: boolean) => {
+
     if (random) {
 
       const randomPins = Math.floor(Math.random() * (state.currentlyPins)) + 1;
@@ -313,14 +318,16 @@ const BowlingPlayground: FC = () => {
   }
 
   useEffect(() => {
+
     if ((state.total === 300 || (!frameScheme[frameScheme.length - 1].strike && state.stage === 10)) && !state.gameEnd) {
+
       gameEnd()
     }
   }, [frameScheme, gameEnd, state])
 
   return (
     <>
-      <Modal
+      <CustomModal
         header={state.gamePosition ? 'Bowling Room. Start game?' : 'Game over'}
         open={state.gameEnd || state.gamePosition}
         handleCloseModal={() => stateSetter([{key: 'gamePosition', item: false}])}
@@ -332,32 +339,33 @@ const BowlingPlayground: FC = () => {
             <CustomButton onClick={() => stateSetter([{key: 'gameEnd', item: false}])}>Try Again</CustomButton>
           </>
         }
-      </Modal>
+      </CustomModal>
       {state.gamePosition
         ? <CustomButton onClick={() => stateSetter([{key: 'gamePosition', item: true}])}>Try Again</CustomButton>
         : <div>
           <h1>Bowling Room</h1>
           <h3>Stage: {state.stage > 9 ? 'Bonus game' : state.stage + 1}</h3>
-          <h4>Total:{state.total}</h4>
-          <p>Curently pins: {state.currentlyPins}</p>
-          <p>Pins: {state.pins}</p>
-          <div style={{display: 'flex', width: '50%'}}>
-            <InputRange
-              max={state.currentlyPins}
-              onChange={(e: any) => stateSetter([{key: 'pins', item: Number(e.target.value)}])}
-              value={state.pins}
-            />
-            <div style={{display: 'flex', margin: '0 10px'}}>
-              <CustomButton
-                onClick={() => handleActionButton()}
-              >
-                {state.goals === 1 ? 'Spare!' : 'Strike!'}
-              </CustomButton>
-              <CustomButton
-                onClick={() => handleActionButton(true)}
-              >
-                Random!
-              </CustomButton>
+          <Scene currentlyPins={state.currentlyPins}/>
+          <div className={styles.pullWrapper}>
+            <PinsDisplay pins={state.pins}/>
+            <div className={styles.pinsPull}>
+              <InputRange
+                max={state.currentlyPins}
+                onChange={(e: any) => stateSetter([{key: 'pins', item: Number(e.target.value)}])}
+                value={state.pins}
+              />
+              <div className={styles.pinsPull__buttonWrapper}>
+                <CustomButton
+                  onClick={() => handleActionButton()}
+                >
+                  {state.goals === 1 ? 'Spare!' : 'Strike!'}
+                </CustomButton>
+                <CustomButton
+                  onClick={() => handleActionButton(true)}
+                >
+                  Random!
+                </CustomButton>
+              </div>
             </div>
           </div>
           <div>
@@ -368,9 +376,9 @@ const BowlingPlayground: FC = () => {
             </CustomButton>
 
           </div>
+          <BowlingScoreSheet frameScheme={frameScheme}/>
         </div>
       }
-      <BowlingScoreSheet frameScheme={frameScheme}/>
     </>
 
 
