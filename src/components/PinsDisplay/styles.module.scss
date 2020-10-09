@@ -1,0 +1,36 @@
+.pinsDisplay {
+  position: relative;
+  max-width: 150px;
+  max-height: 150px;
+
+  &__imageWrapper {
+    width: 150px;
+    height: 150px;
+
+    img {
+      height: 100%;
+      margin: 0;
+      width: 100%;
+      -o-object-fit: contain;
+      object-fit: contain;
+    }
+  }
+
+  &__pinsWrapper {
+    top: 0;
+    left: 0;
+    position: absolute;
+    max-width: 150px;
+    max-height: 150px;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+
+    p {
+      max-width: 150px;
+      width: 10%;
+      margin: 50px auto 0;
+      font-size: 5em;
+    }
+  }
+}

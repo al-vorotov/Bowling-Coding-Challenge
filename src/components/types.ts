@@ -3,7 +3,6 @@ import {IFrame} from "../layouts/BowlingPlayground/types";
 
 export interface ICustomButton {
   children?: ReactNode
-  icon?: string
   onClick?: MouseEventHandler<HTMLElement>
 }
 
@@ -23,4 +22,11 @@ export interface IModalProps {
 
 export interface IBowlingScoreSheet{
   frameScheme :IFrame[]
+}
+
+export interface IPinsDisplay{
+  pins: number
+}
+export interface IScene{
+  currentlyPins: number
 }

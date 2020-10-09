@@ -26,4 +26,4 @@ const CustomModal: FC<IModalProps> = ({header, open, children, handleCloseModal}
   );
 }
 
-export default CustomModal;
+export{ CustomModal};
