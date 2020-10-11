@@ -194,6 +194,10 @@ const BowlingPlayground: FC = () => {
           key: 'goals',
           item: !state.goals
         },
+        {
+          key: 'action',
+          item: findRemoveActionIndex(state.stage - 1, state.action)
+        },
       ]
     )
     frameSchemeSetter(
@@ -205,7 +209,7 @@ const BowlingPlayground: FC = () => {
         strike: false
       }
     )
-  }, [frameScheme, state.goals, state.stage, stateSetter])
+  }, [frameScheme, state.action, state.goals, state.stage, stateSetter])
 
   const defaultCase = useCallback(() => {
 
@@ -295,19 +299,22 @@ const BowlingPlayground: FC = () => {
   }
 
   const handleKnockPins = useCallback((pins) => {
-
     switch (pins) {
 
       case GOALS.STRIKE:
-        strikeCase()
-        return
+        if(state.goals){
+          defaultCase()
+        } else {
+          strikeCase()
+        }
+        break
       case GOALS.FALSE:
         falseCase()
-        return
+        break
       default:
         defaultCase()
     }
-  }, [defaultCase, falseCase, strikeCase])
+  }, [defaultCase, falseCase, state.goals, strikeCase])
 
   const handleActionButton = (random?: boolean) => {
 
@@ -329,9 +336,10 @@ const BowlingPlayground: FC = () => {
 
   useEffect(() => {
 
-    if ((state.total === 300 || (!frameScheme[frameScheme.length - 1].strike && state.stage === 10)) && !state.gameEnd) {
-
-      gameEnd()
+    if (state.stage > 9 || state.total === 300) {
+      if (!(state.action.includes(9) && state.stage < 11 && !state.goals)) {
+        gameEnd()
+      }
     }
   }, [frameScheme, gameEnd, state])
 
@@ -350,7 +358,7 @@ const BowlingPlayground: FC = () => {
           </>
         }
       </CustomModal>
-      {state.gameEnd || state.gamePosition
+      {state.gamePosition
         ? <CustomButton onClick={() => startGame()}>Try Again</CustomButton>
         : <div>
           <h1>Bowling Room</h1>
@@ -369,7 +377,7 @@ const BowlingPlayground: FC = () => {
                 <CustomButton
                   onClick={() => handleActionButton()}
                 >
-                  {state.goals? 'Spare!' : 'Strike!'}
+                  {state.goals ? 'Spare!' : 'Strike!'}
                 </CustomButton>
                 <CustomButton
                   onClick={() => handleActionButton(true)}
