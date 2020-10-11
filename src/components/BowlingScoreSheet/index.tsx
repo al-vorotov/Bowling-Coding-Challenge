@@ -8,7 +8,6 @@ import styles from './styles.module.scss'
 import {IFrame} from "../../layouts/BowlingPlayground/types";
 
 const BowlingScoreSheet: FC<IBowlingScoreSheet> = ({frameScheme}: IBowlingScoreSheet) => {
-
   const handleActionDisplay = (item: IFrame) => {
 
     return item.strike //if strike
