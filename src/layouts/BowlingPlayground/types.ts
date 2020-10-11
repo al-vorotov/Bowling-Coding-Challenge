@@ -4,7 +4,7 @@ export interface IState {
   currentlyPins: number
   gamePosition: boolean
   gameEnd: boolean
-  goals: number
+  goals: boolean
   pins: number
   stage: number
   total: number

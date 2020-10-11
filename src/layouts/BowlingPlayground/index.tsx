@@ -24,7 +24,7 @@ const defaultState = {
   currentlyPins: 10,
   gamePosition: true,
   gameEnd: false,
-  goals: 0,
+  goals: false,
   pins: 0,
   stage: 0,
   total: 0,
@@ -188,39 +188,43 @@ const BowlingPlayground: FC = () => {
       [
         {
           key: 'stage',
-          item: state.goals === 1 ? state.stage + 1 : state.stage
+          item: state.goals ? state.stage + 1 : state.stage
         },
         {
           key: 'goals',
-          item: state.goals === 1 ? 0 : 1
+          item: !state.goals
+        },
+        {
+          key: 'action',
+          item: findRemoveActionIndex(state.stage - 1, state.action)
         },
       ]
     )
     frameSchemeSetter(
       {
-        goals1: state.goals === 1 ? frameScheme[state.stage].goals1 : 0,
-        goals2: 0,
-        total: state.goals === 0 ? frameScheme[state.stage].total : 0,
+        goals1: state.goals ? frameScheme[state.stage].goals1 : 0,
+        goals2: state.goals ? 0 : -1,
+        total: state.goals ? frameScheme[state.stage].total : 0,
         stage: state.stage,
         strike: false
       }
     )
-  }, [frameScheme, state.goals, state.stage, stateSetter])
+  }, [frameScheme, state.action, state.goals, state.stage, stateSetter])
 
   const defaultCase = useCallback(() => {
 
-    const handleSpareCaseArray = state.goals === 1 && state.currentlyPins === state.pins
+    const handleSpareCaseArray = state.goals && state.currentlyPins === state.pins
       ? [...state.action, state.stage]
       : state.action
     let currentFrameSchema = frameScheme
     let stateSetterArray: IStateSetter[] = [
       {
         key: 'stage',
-        item: state.goals === 1 ? state.stage + 1 : state.stage
+        item: state.goals ? state.stage + 1 : state.stage
       },
       {
         key: 'goals',
-        item: state.goals === 1 ? 0 : 1
+        item: !state.goals
       },
       {
         key: 'total',
@@ -228,7 +232,7 @@ const BowlingPlayground: FC = () => {
       },
       {
         key: 'currentlyPins',
-        item: state.goals === 0
+        item: !state.goals
           ? state.currentlyPins - state.pins
           : 10
       },
@@ -242,13 +246,13 @@ const BowlingPlayground: FC = () => {
       }
     ]
     currentFrameSchema[state.stage] = {
-      goals1: state.goals === 0
+      goals1: !state.goals
         ? state.pins
         : frameScheme[state.stage].goals1,
-      goals2: state.goals === 1
+      goals2: state.goals
         ? state.pins
-        : 0,
-      total: state.goals === 1
+        : -1,
+      total: state.goals
         ? frameScheme[state.stage].total + state.pins
         : state.pins,
       stage: state.stage,
@@ -275,7 +279,7 @@ const BowlingPlayground: FC = () => {
       },
       {
         key: 'goals',
-        item: 0
+        item: false
       },
       {
         key: 'stage',
@@ -284,20 +288,33 @@ const BowlingPlayground: FC = () => {
     ])
   }, [stateSetter])
 
-  const handleKnockPins = useCallback((pins) => {
+  const startGame = () => {
 
+    setFrameScheme((prevState) => {
+      prevState.splice(0, prevState.length, ...defaultFrameScheme)
+      return [...prevState]
+    })
+
+    setState({...defaultState, gamePosition: false})
+  }
+
+  const handleKnockPins = useCallback((pins) => {
     switch (pins) {
 
       case GOALS.STRIKE:
-        strikeCase()
-        return
+        if(state.goals){
+          defaultCase()
+        } else {
+          strikeCase()
+        }
+        break
       case GOALS.FALSE:
         falseCase()
-        return
+        break
       default:
         defaultCase()
     }
-  }, [defaultCase, falseCase, strikeCase])
+  }, [defaultCase, falseCase, state.goals, strikeCase])
 
   const handleActionButton = (random?: boolean) => {
 
@@ -307,7 +324,7 @@ const BowlingPlayground: FC = () => {
 
       stateSetter([{key: 'pins', item: randomPins}])
     } else {
-      if (state.goals === 1) {
+      if (state.goals) {
 
         stateSetter([{key: 'pins', item: state.currentlyPins}])
       } else {
@@ -319,9 +336,10 @@ const BowlingPlayground: FC = () => {
 
   useEffect(() => {
 
-    if ((state.total === 300 || (!frameScheme[frameScheme.length - 1].strike && state.stage === 10)) && !state.gameEnd) {
-
-      gameEnd()
+    if (state.stage > 9 || state.total === 300) {
+      if (!(state.action.includes(9) && state.stage < 11 && !state.goals)) {
+        gameEnd()
+      }
     }
   }, [frameScheme, gameEnd, state])
 
@@ -330,21 +348,22 @@ const BowlingPlayground: FC = () => {
       <CustomModal
         header={state.gamePosition ? 'Bowling Room. Start game?' : 'Game over'}
         open={state.gameEnd || state.gamePosition}
-        handleCloseModal={() => stateSetter([{key: 'gamePosition', item: false}])}
+        handleCloseModal={() => startGame()}
       >
         {state.gamePosition
-          ? <CustomButton onClick={() => stateSetter([{key: 'gamePosition', item: false}])}>Start game</CustomButton>
+          ? <CustomButton onClick={() => startGame()}>Start game</CustomButton>
           : <>
             <p>You total: {state.total}</p>
-            <CustomButton onClick={() => stateSetter([{key: 'gameEnd', item: false}])}>Try Again</CustomButton>
+            <CustomButton onClick={() => startGame()}>Try Again</CustomButton>
           </>
         }
       </CustomModal>
       {state.gamePosition
-        ? <CustomButton onClick={() => stateSetter([{key: 'gamePosition', item: true}])}>Try Again</CustomButton>
+        ? <CustomButton onClick={() => startGame()}>Try Again</CustomButton>
         : <div>
           <h1>Bowling Room</h1>
           <h3>Stage: {state.stage > 9 ? 'Bonus game' : state.stage + 1}</h3>
+          <h3>Total: {state.total}</h3>
           <Scene currentlyPins={state.currentlyPins}/>
           <div className={styles.pullWrapper}>
             <PinsDisplay pins={state.pins}/>
@@ -358,7 +377,7 @@ const BowlingPlayground: FC = () => {
                 <CustomButton
                   onClick={() => handleActionButton()}
                 >
-                  {state.goals === 1 ? 'Spare!' : 'Strike!'}
+                  {state.goals ? 'Spare!' : 'Strike!'}
                 </CustomButton>
                 <CustomButton
                   onClick={() => handleActionButton(true)}
